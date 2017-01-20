@@ -40,12 +40,11 @@ void setMotorMode(int mode) {
 }
 
 long frq = 440;
-//boolean flg = true;
 int delayTime = 10;
 
 int flg = 1;
 
-unsigned long spd = 1; //min 1 max 100,000
+unsigned long spd = 1; // min 1 max 100,000
 
 void loop() {
 
@@ -82,8 +81,6 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  frq = frq * 1.8;
   //*/
 
   /*
@@ -101,8 +98,6 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  frq = frq * 2.0;
   //*/
   
   /*
@@ -120,8 +115,6 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  frq = frq * 2.5;
   //*/
 
   /*
@@ -141,8 +134,6 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  frq = frq * 1.4;
   //*/
 
   /*
@@ -164,8 +155,6 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  frq = frq * 3.0;
   //*/
 
   //*
@@ -200,35 +189,23 @@ void loop() {
   } else {
     frq = spd / 1000.0;
   }
-
-  // 1パルス同期モードの際 frq = 65 となる
-  // しかしこれは下記の OCR1A の範囲内に収まらない為、2倍にしてある
-  // (この速度じゃモーターの励起音は聞こえないし、3パルス同期モードまでにして実際の周波数に合わせた方がリアルかも?) 
-  frq = frq * 2;
   //*/
 
-  float dutyTest = 0.0;
+  // 解説とかは頑張ってまとめた http://blog.kts.jp.net/archives/18
 
-  float spd3 = (spd2 + dutyTest) * 100.0 / (100.0 + dutyTest); 
-
-  // これはやっぱりここが一番分かりやすい
-  // http://garretlab.web.fc2.com/arduino/inside/arduino/wiring_analog.c/analogWrite.html
-
-  TCCR1A = B00110001;
-  TCCR1B = B00010001;
-
-  // PWM の詳細はここが一番分かりやすい
-  // https://www.arduino.cc/en/Tutorial/SecretsOfArduinoPWM
-
-  // OCRA1x は16bit変数なので 2^16-1 = 65535 が上限値
-  // よって frq の範囲は 8,000,000 / 65535 = 122.072... -> 123Hz から
+  // モード指定
+  TCCR1A = B00100001;
+  TCCR1B = B00010010;
   
   // TOP値
-  OCR1A = (word)(8000000 / frq);
+  OCR1A = (unsigned int) (1000000 / frq);
 
-  // duty比 ≒ 速度
-  float num = 100.0 / spd2;
-  OCR1B = (word)(8000000 / frq - 8000000 / frq / num);
+  // モーターの起動Duty比
+  float dutyStart = 0.0;
+  float duty = (spd2 + dutyStart) * 100.0 / (100.0 + dutyStart) / 100.0; 
+
+  // Duty比 ≒ 速度
+  OCR1B = (unsigned int) (1000000 / frq * (spd2 / 100.0));
 
   delayMicroseconds(delayTime);
 }
