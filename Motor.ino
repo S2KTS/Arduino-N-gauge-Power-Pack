@@ -4,13 +4,25 @@
 #define motorPin2 A1
 #define PWMPin 10
 
-#define ledDuty 4
+#define ledPin 0
+
+#define startDuty 0.0 // モーターの始動Duty比 1 - 100,000 で指定
+#define ledDuty 0.0 // LED点灯Duty比 startDuty比より小さい方が良い(じゃないと走りだす) 1 - 100,000 で指定
+
+long frq = 440;
+int delayTime = 10;
+
+int flg = 1;
+
+unsigned long spd = 1; // min 1 max 100,000
 
 void setup() {
   pinMode(motorPin1, OUTPUT);
   pinMode(motorPin2, OUTPUT);
   pinMode(PWMPin, OUTPUT);
   setMotorMode(1);
+
+  pinMode(ledPin, INPUT);
 }
 
 void setMotorMode(int mode) {
@@ -39,13 +51,6 @@ void setMotorMode(int mode) {
   digitalWrite(motorPin2, mtr2);
 }
 
-long frq = 440;
-int delayTime = 10;
-
-int flg = 1;
-
-unsigned long spd = 1; // min 1 max 100,000
-
 void loop() {
 
   if (flg == 1) {
@@ -62,134 +67,8 @@ void loop() {
     }
   }
 
-  int spd2 = spd / 1000.0; //min 1 max 100
-
-  /*
-  // E209
-  if (spd2 < 5) {
-    frq = 114;
-  } else if (spd2 < 9) {
-    frq = spd * 57.0 / 1000.0;
-  } else if (spd2 < 20) {
-    frq = spd * 33.0 / 1000.0;
-  } else if (spd2 < 30) {
-    frq = spd * 21.0 / 1000.0;
-  } else if (spd2 < 45) {
-    frq = spd * 9.0 / 1000.0;
-  } else if (spd2 < 70) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
-
-  /*
-  // E231 墜落インバータ
-  if (spd2 < 25) {
-    frq = 1050;
-  } else if (spd2 < 50) {
-    // 1050 -> 700
-    frq = 1050 - (350 * (spd - 25000) / 25000);
-  } else if (spd2 < 60) {
-    // 700 -> 1800
-    frq = 700 + (1100 * (spd - 50000) / 10000);
-  } else if (spd2 < 65) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
-  
-  /*
-  // E233
-  if (spd2 < 10 && flg == 0) { //減速時のみ
-    frq = 200;
-  } else if (spd2 < 18) {
-    frq = 525;
-  } else if (spd2 < 38) {
-    frq = 525 + (375 * (spd - 18000) / 20000);
-  } else if (spd2 < 47) {
-    frq = spd * 9.0 / 1000.0;
-  } else if (spd2 < 50) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
-
-  /*
-  // 東急5177F
-  if (spd2 < 15 && flg == 0) { //減速時のみ
-    frq = 200;
-  } else if (spd2 < 30) {
-    frq = 560;
-  } else if (spd2 < 65) {
-    // 560 -> 700
-    frq = 560 + (140 * (spd - 30000) / 35000);
-  } else if (spd2 < 80) {
-    // 700 -> 1800
-    frq = 700 + (1100 * (spd - 65000) / 15000);
-  } else if (spd2 < 90) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
-
-  /*
-  // 東急9000
-  if (spd2 < 5) {
-    frq = 200;
-  } else if (spd2 < 7) {
-    frq = spd * 45.0 / 1000.0;
-  } else if (spd2 < 13) {
-    frq = spd * 27.0 / 1000.0;
-  } else if (spd2 < 24) {
-    frq = spd * 15.0 / 1000.0;
-  } else if (spd2 < 30) {
-    frq = spd * 9.0 / 1000.0;
-  } else if (spd2 < 36) {
-    frq = spd * 5.0 / 1000.0;
-  } else if (spd2 < 45) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
-
-  //*
-  // 京急1000 ドレミファインバーター
-  // 本当はもっと同期モード数たくさんある
-  if (spd2 < 4) {
-    frq = 349;
-  } else if (spd2 < 5) {
-    frq = 392;
-  } else if (spd2 < 6) {
-    frq = 440;
-  } else if (spd2 < 7) {
-    frq = 466;
-  } else if (spd2 < 8) {
-    frq = 523;
-  } else if (spd2 < 9) {
-    frq = 587;
-  } else if (spd2 < 10) {
-    frq = 622;
-  } else if (spd2 < 11) {
-    frq = 698;
-  } else if (spd2 < 30) {
-    frq = 784;
-  } else if (spd2 < 35) {
-    frq = spd * 33.0 / 1000.0;
-  } else if (spd2 < 40) {
-    frq = spd * 21.0 / 1000.0;
-  } else if (spd2 < 55) {
-    frq = spd * 9.0 / 1000.0;
-  } else if (spd2 < 65) {
-    frq = spd * 3.0 / 1000.0;
-  } else {
-    frq = spd / 1000.0;
-  }
-  //*/
+  frq = getFreq(spd);
+  if (frq < 15) frq = 15; // 誤動作防止
 
   // 解説とかは頑張ってまとめた http://blog.kts.jp.net/archives/18
 
@@ -201,11 +80,151 @@ void loop() {
   OCR1A = (unsigned int) (1000000 / frq);
 
   // モーターの起動Duty比
-  float dutyStart = 0.0;
-  float duty = (spd2 + dutyStart) * 100.0 / (100.0 + dutyStart) / 100.0; 
+  float duty = (spd + startDuty) / (100000.0 + startDuty);
+
+  if (digitalRead(ledPin) == HIGH && duty < ledDuty) {
+    // ledPin が HIGHの場合 でかつ duty が ledDuty 以下の場合
+    duty = ledDuty;
+  }
 
   // Duty比 ≒ 速度
-  OCR1B = (unsigned int) (1000000 / frq * (spd2 / 100.0));
+  OCR1B = (unsigned int) (1000000 / frq * (duty / 100.0));
 
   delayMicroseconds(delayTime);
+}
+
+long getFreq(int int_spd) {
+
+ /*** 解説的な
+ 引数 int_spd を基に周波数をreturnする関数
+ 非同期モードはよく考えて周波数を求める式を作る
+ 同期モードはint_spd * 同期パルス数 / 1000.0 で簡単に求められる(".0"をつけないと正しく計算されないので注意)
+ ***/
+
+  /*
+  // E209
+  if (int_spd < 5 * 1000) {
+    return 114;
+  } else if (int_spd < 9 * 1000) {
+    return int_spd * 57.0 / 1000.0;
+  } else if (int_spd < 20 * 1000) {
+    return int_spd * 33.0 / 1000.0;
+  } else if (int_spd < 30 * 1000) {
+    return int_spd * 21.0 / 1000.0;
+  } else if (int_spd < 45 * 1000) {
+    return int_spd * 9.0 / 1000.0;
+  } else if (int_spd < 70 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
+
+  /*
+  // E231 墜落インバータ
+  if (int_spd < 25 * 1000) {
+    return 1050;
+  } else if (int_spd < 50 * 1000) {
+    // 1050 -> 700
+    return 1050 - (350 * (int_spd - 25000) / 25000);
+  } else if (int_spd < 60 * 1000) {
+    // 700 -> 1800
+    return 700 + (1100 * (int_spd - 50000) / 10000);
+  } else if (int_spd < 65 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
+  
+  /*
+  // E233
+  if (int_spd < 10 * 1000 && flg == 0) { //減速時のみ
+    return 200;
+  } else if (int_spd * 1000 < 18) {
+    return 525;
+  } else if (int_spd < 38 * 1000) {
+    return 525 + (375 * (int_spd - 18000) / 20000);
+  } else if (int_spd < 47 * 1000) {
+    return int_spd * 9.0 / 1000.0;
+  } else if (int_spd < 50 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
+
+  /*
+  // 東急5177F
+  if (int_spd < 15 * 1000 && flg == 0) { //減速時のみ
+    return 200;
+  } else if (int_spd < 30 * 1000) {
+    return 560;
+  } else if (int_spd < 65 * 1000) {
+    // 560 -> 700
+    return 560 + (140 * (int_spd - 30000) / 35000);
+  } else if (int_spd < 80 * 1000) {
+    // 700 -> 1800
+    return 700 + (1100 * (int_spd - 65000) / 15000);
+  } else if (int_spd < 90 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
+
+  /*
+  // 東急9000
+  if (int_spd < 5 * 1000) {
+    return 200;
+  } else if (int_spd < 7 * 1000) {
+    return int_spd * 45.0 / 1000.0;
+  } else if (int_spd < 13 * 1000) {
+    return int_spd * 27.0 / 1000.0;
+  } else if (int_spd < 24 * 1000) {
+    return int_spd * 15.0 / 1000.0;
+  } else if (int_spd < 30 * 1000) {
+    return int_spd * 9.0 / 1000.0;
+  } else if (int_spd < 36 * 1000) {
+    return int_spd * 5.0 / 1000.0;
+  } else if (int_spd < 45 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
+
+  //*
+  // 京急1000 ドレミファインバーター
+  // 本当はもっと同期モード数たくさんある
+  if (int_spd < 4 * 1000) {
+    return 349;
+  } else if (int_spd < 5 * 1000) {
+    return 392;
+  } else if (int_spd < 6 * 1000) {
+    return 440;
+  } else if (int_spd < 7 * 1000) {
+    return 466;
+  } else if (int_spd < 8 * 1000) {
+    return 523;
+  } else if (int_spd < 9 * 1000) {
+    return 587;
+  } else if (int_spd < 10 * 1000) {
+    return 622;
+  } else if (int_spd < 11 * 1000) {
+    return 698;
+  } else if (int_spd < 30 * 1000) {
+    return 784;
+  } else if (int_spd < 35 * 1000) {
+    return int_spd * 33.0 / 1000.0;
+  } else if (int_spd < 40 * 1000) {
+    return int_spd * 21.0 / 1000.0;
+  } else if (int_spd < 55 * 1000) {
+    return int_spd * 9.0 / 1000.0;
+  } else if (int_spd < 65 * 1000) {
+    return int_spd * 3.0 / 1000.0;
+  } else {
+    return int_spd / 1000.0;
+  }
+  //*/
 }
