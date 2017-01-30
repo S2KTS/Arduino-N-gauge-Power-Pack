@@ -7,7 +7,16 @@
 #define ledPin 0
 
 #define startDuty 0.0 // モーターの始動Duty比 1 - 100,000 で指定
+#define stopDuty 0.0 // モーターの停止Duty比 1 - 100,000 で指定 startDutyよりは低いはず
 #define ledDuty 0.0 // LED点灯Duty比 startDuty比より小さい方が良い(じゃないと走りだす) 1 - 100,000 で指定
+
+boolean useLED = false; // LEDを使うときはtrue
+
+/***
+startDuty: 発車するするギリギリのDuty比
+stopDuty: 停車するDuty比
+ledDuty: 要見直し
+***/
 
 long frq = 440;
 int delayTime = 10;
@@ -29,6 +38,9 @@ void setMotorMode(int mode) {
   boolean mtr1;
   boolean mtr2;
 
+  /**
+  1: 正転, 2: 逆転, 3:ブレーキ, それ以外: 惰行
+  **/
   switch(mode) {
     case 1:
       mtr1 = HIGH;
@@ -53,6 +65,7 @@ void setMotorMode(int mode) {
 
 void loop() {
 
+  /** 加速して減速を繰り返すだけのテストプログラム **/
   if (flg == 1) {
     // 加速
     spd++;
@@ -77,12 +90,21 @@ void loop() {
   TCCR1B = B00010010;
   
   // TOP値
-  OCR1A = (unsigned int) (1000000 / frq);
+  OCR1A = (unsigned int) (1000000 / frq); // 10^6
 
   // モーターの起動Duty比
-  float duty = (spd + startDuty) / (100000.0 + startDuty);
+  float adjustDuty = (flg == 1) ? startDuty : stopDuty;
+  /** 三項演算子 下記と同義
+    float adjustDuty;
+    if (flg == 1) {
+      adjustDuty = startDuty;
+    } else {
+      adjustDuty = stopDuty;
+    }
+  **/
+  float duty = adjustDuty + (100000.0 - adjustDuty) * spd / 100000.0; // 10^5
 
-  if (digitalRead(ledPin) == HIGH && duty < ledDuty) {
+  if (useLED && duty < ledDuty && digitalRead(ledPin) == HIGH) {
     // ledPin が HIGHの場合 でかつ duty が ledDuty 以下の場合
     duty = ledDuty;
   }
