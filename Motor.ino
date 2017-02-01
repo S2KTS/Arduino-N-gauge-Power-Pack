@@ -110,7 +110,7 @@ void loop() {
   }
 
   // Duty比 ≒ 速度
-  OCR1B = (unsigned int) (1000000 / frq * (duty / 100.0));
+  OCR1B = (unsigned int) (1000000 / frq * (duty / 100000.0));
 
   delayMicroseconds(delayTime);
 }
